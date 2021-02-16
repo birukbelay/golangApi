@@ -2,7 +2,7 @@ package service
 
 import (
 	 "github.com/birukbelay/item/entity"
-	"github.com/birukbelay/item/models/items"
+	"github.com/birukbelay/item/packages/items"
 )
 
 // ItemService implements items.ItemService interface
@@ -10,13 +10,17 @@ type ItemServices struct {
 	itemRepo items.ItemRepository
 }
 
-func (is *ItemServices) ItemsByFilter(limit int, offsetValue, offsetType, categories, brand, stype, sort string, sort_way int, min_price, max_price int) ([]entity.Item, string, string, []error) {
-	panic("implement me")
-}
-
 // NewItemService returns new ItemService object
 func NewItemService(itemRepository items.ItemRepository) items.ItemService {
 	return &ItemServices{itemRepo: itemRepository}
+}
+
+func (is *ItemServices) ItemsByFilter(limit int, offsetValue, offsetType, categories, brand, stype, sort string, sort_way int, min_price, max_price int) ([]entity.Item, string, string, []error) {
+	itms,_,_, errs := is.itemRepo.ItemsByFilter(limit , offsetValue, offsetType, categories, brand, stype, sort , sort_way , min_price, max_price )
+	if len(errs) > 0 {
+		return nil,"","", errs
+	}
+	return itms,"","", errs
 }
 
 // Items returns all stored item items items

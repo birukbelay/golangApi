@@ -22,7 +22,7 @@ func FormCategoriesValidator(values url.Values) (form.ValidationErrors, bool)  {
 func FormItemValidator(values url.Values) (bool, form.ValidationErrors)  {
 
 	newItemForm := form.Input{Values: values, VErrors: form.ValidationErrors{}}
-	newItemForm.Required("title", "description","categories", "type")
+	newItemForm.Required("name", "description","category", )
 	newItemForm.MinLength("description", 10)
 
 

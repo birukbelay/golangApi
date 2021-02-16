@@ -20,17 +20,21 @@ func UploadFile(r *http.Request, updating bool, updatingFileName string, uniqueP
 
 
 
+	//LogTrace("here ", "==========")
 	// parse and validate file and post parameters
 	file, fileHeader, err := r.FormFile("image")
 	if err != nil {
-		//LogValue(global.InvalidFile, err)
+		//Tr(global.InvalidFile, err)
 		return "", err, global.InvalidFile, http.StatusBadRequest
 	}
-	fmt.Println("22..")
+
+
 
 	defer file.Close()
 	// Get and print out file size
 	fileSize := fileHeader.Size
+
+	//LogTrace("Upload-> file size ", fileSize)
 	//fmt.Printf("File size (bytes): %v\n", fileSize)
 	// validate file size
 	if fileSize > global.MaxUploadSize {
@@ -58,14 +62,15 @@ func UploadFile(r *http.Request, updating bool, updatingFileName string, uniqueP
 	if err != nil {
 		return "", err, "CANT_READ_FILE_TYPE", http.StatusInternalServerError
 	}
+	//LogTrace("fileEndings", fileEndings)
 
-	//TODO update this method to delete then replace the old image
-	//TODO checkit if it works with dt file Types .jpg, png
+
+
 	var imgName string
 	if !updating{
 		fileName := randToken(12)
 		img := strings.TrimSuffix(fileHeader.Filename, fileEndings[0])
-		imgName = img + "-" + fileName + fileEndings[0]
+		imgName = img + "-" + fileName +fileEndings[0]
 	}else{
 		imgName = updatingFileName
 	}
@@ -78,15 +83,22 @@ func UploadFile(r *http.Request, updating bool, updatingFileName string, uniqueP
 		return "", err, "CANT_READ_FILE_TYPE", http.StatusInternalServerError
 	}
 
-	newPath := filepath.Join(wd, "public", "assets", "images", uniquePath,imgName)
-	fmt.Println("newPat..", newPath)
+	newPath := filepath.Join(wd, "public", "assets", "images", uniquePath)
+	fullPath := filepath.Join(newPath, imgName)
+
+	LogTrace("path", newPath)
 
 	//fmt.Printf("FileType: %s, File: %s\n", detectedFileType, newPath)
 	// write file
-	newFile, err := os.Create(newPath)
+	if _, err := os.Stat(newPath); os.IsNotExist(err) {
+		err := os.MkdirAll(newPath, 0777)
+		if err != nil {
+			return "", err,"CANT_CREATE_PATH", http.StatusInternalServerError
+		}
+	}
+	newFile, err := os.Create(fullPath)
 	if err != nil {
-		fmt.Println("os create err")
-
+		LogTrace("os.Create",err)
 		return "", err, "CANT_WRITE_FILE", http.StatusInternalServerError
 	}
 

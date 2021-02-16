@@ -10,10 +10,10 @@ func FormUserValidator(accountForm *form.Input)  bool  {
 	// Validate the form contents
 	//accountForm := Input{Values: values, VErrors: ValidationErrors{}}
 
-	accountForm.Required("fullname", "email","phone", "password", "confirmpassword")
+	accountForm.Required("username", "email", "password", "confirmpassword")
 	accountForm.MatchesPattern("email", validators.EmailRX)
 	accountForm.MatchesPattern("phone", validators.PhoneRX)
-	accountForm.MinLength("password", 8)
+	accountForm.MinLength("password", 6)
 	accountForm.PasswordMatches("password", "confirmpassword")
 	//accountForm.CSRF = token
 	// If there are any errors, redisplay the signup form.
@@ -23,6 +23,7 @@ func FormUserValidator(accountForm *form.Input)  bool  {
 	//fmt.Println("valid")
 	return  true
 }
+
 func LoginValidator(accountForm *form.Input)  bool  {
 
 
@@ -34,7 +35,7 @@ func LoginValidator(accountForm *form.Input)  bool  {
 	}else{
 		accountForm.VErrors.Add("info","info_type not recognized")
 	}
-	accountForm.MinLength("password", 8)
+	accountForm.MinLength("password", 6)
 
 	if !accountForm.Valid() {
 		return  false

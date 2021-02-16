@@ -2,7 +2,8 @@ package service
 
 import (
 	"github.com/birukbelay/item/entity"
-	"github.com/birukbelay/item/models/items"
+	"github.com/birukbelay/item/packages/items"
+	"github.com/birukbelay/item/utils/helpers"
 )
 
 // CategoriesService implements items.CategoriesService interface
@@ -55,6 +56,7 @@ func (cs *CategoriesService) Category(id string) (*entity.Categories, []error) {
 // UpdateCategories updates a cateogory with new data
 func (cs *CategoriesService) UpdateCategories(categories *entity.Categories) (*entity.Categories, []error) {
 
+	helpers.LogTrace("id", categories.ID)
 	cat, errs := cs.categoriesRepo.UpdateCategories(categories)
 
 	if len(errs) > 0 {

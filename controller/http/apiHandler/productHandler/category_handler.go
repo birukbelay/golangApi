@@ -1,9 +1,7 @@
 package productHandler
 
-
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/birukbelay/item/entity"
 	"github.com/birukbelay/item/utils/validators/FormValidators"
 	"net/http"
@@ -13,7 +11,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	//"go.mongodb.org/mongo-driver/bson/primitive"
 
-	"github.com/birukbelay/item/models/items"
+	"github.com/birukbelay/item/packages/items"
 	"github.com/birukbelay/item/utils/global"
 	"github.com/birukbelay/item/utils/helpers"
 )
@@ -36,7 +34,7 @@ func (aih *AdminCategoriesHandler) GetCategories(w http.ResponseWriter, r *http.
 
 	query := r.URL.Query()
 
-	offsetValue :=query.Get("offsetValue")
+	offsetValue :=query.Get("offset")
 
 
 
@@ -50,7 +48,7 @@ func (aih *AdminCategoriesHandler) GetCategories(w http.ResponseWriter, r *http.
 	}
 
 
-	Categories, errs := aih.categoriesService.Categories(limit,offsetValue)
+	Categories, errs := aih.categoriesService.Categories(limit, offsetValue)
 	if len(errs) > 0 {
 		helpers.HandleErr(w, errs, global.StatusNotFound, http.StatusNotFound)
 		return
@@ -72,7 +70,7 @@ func (aih *AdminCategoriesHandler) GetCategories(w http.ResponseWriter, r *http.
 func (aih *AdminCategoriesHandler) GetSingleCategories(w http.ResponseWriter, _ *http.Request, ps httprouter.Params) {
 
 	id := ps.ByName("id")
-	fmt.Println(id)
+
 
 	// calling the service
 	categories, errs := aih.categoriesService.Category(id)
@@ -118,7 +116,7 @@ func (aih *AdminCategoriesHandler) CreateCategories(w http.ResponseWriter, r *ht
 	//categories.ID = primitive.NewObjectID()
 
 	// IMAGE UPLOAD
-	img, err, status, statusCode := helpers.UploadFile(r, false, "", "Categoriess" )
+	img, err, status, statusCode := helpers.UploadFile(r, false, "", "categories" )
 	if err != nil {
 		helpers.RenderResponse(w, err, status, statusCode)
 		return
@@ -156,6 +154,7 @@ func (aih *AdminCategoriesHandler) UpdateCategories(w http.ResponseWriter, r *ht
 		helpers.HandleErr(w, errs, global.StatusNotFound, http.StatusNotFound)
 		return
 	}
+	helpers.LogTrace("UP Ctg", gen)
 
 
 	if err := r.ParseMultipartForm(global.MaxUploadSize); err != nil {
@@ -175,26 +174,29 @@ func (aih *AdminCategoriesHandler) UpdateCategories(w http.ResponseWriter, r *ht
 	if er!=nil{
 		helpers.RenderResponse(w, er, global.CategoriesInitialization, http.StatusBadRequest)
 	}
+	gen.Description=categories.Description
+	gen.Name=categories.Name
+
 
 	imageChanged , er := strconv.ParseBool(r.PostForm.Get("imageChanged"))
 	if er!=nil{
 		imageChanged =false
 	}
-	userSess, _ := r.Context().Value(entity.CtxUserSessionKey).(*entity.User)
+	//userSess, _ := r.Context().Value(entity.CtxUserSessionKey).(*entity.User)
 
 
 	image:= gen.Image
 	if imageChanged {
-		img, err, status, statusCode := helpers.UploadFile(r,true, image, userSess.ID.Hex())
+		img, err, status, statusCode := helpers.UploadFile(r,true, image, "categories")
 		if err != nil {
 			helpers.RenderResponse(w, err, status, statusCode)
 			img = gen.Image
 			return
 		}
-		categories.Image = img
+		gen.Image = img
 	//TODO make a function to Change the image, Delete the Image
 	}else {
-		categories.Image=  gen.Image
+		gen.Image=  gen.Image
 	}
 
 
@@ -205,13 +207,13 @@ func (aih *AdminCategoriesHandler) UpdateCategories(w http.ResponseWriter, r *ht
 
 
 	// calling the service
-	categories, errs = aih.categoriesService.UpdateCategories(categories)
+	categories, errs = aih.categoriesService.UpdateCategories(gen)
 	if len(errs) > 0 {
 		helpers.HandleErr(w, errs, global.StatusNotFound, 404)
 		return
 	}
 
-	helpers.RenderResponse(w, categories, global.Success, http.StatusOK)
+	helpers.RenderResponse(w, gen, global.Success, http.StatusOK)
 	return
 }
 
@@ -223,7 +225,7 @@ func (aih *AdminCategoriesHandler) DeleteCategories(w http.ResponseWriter, r *ht
 	// calling the service
 	categories, errs := aih.categoriesService.Category(id)
 	//TODO do stg with categories
-	fmt.Println(categories)
+	helpers.LogTrace("ctg", categories)
 
 	if len(errs) > 0 {
 		helpers.HandleErr(w, errs, global.StatusNotFound, http.StatusNotFound)
@@ -243,7 +245,6 @@ func (aih *AdminCategoriesHandler) DeleteCategories(w http.ResponseWriter, r *ht
 }
 
 func InitiateCategories(values url.Values) (*entity.Categories, error) {
-
 	categories := &entity.Categories{
 		Name:         values.Get("name"),
 		Description:  values.Get("description"),

@@ -79,6 +79,59 @@ func PrintUi(sign string, amount int){
 	fmt.Println(sum,"|")
 
 }
+type Color string
+const (
+	ColorBlack  Color = "\u001b[30m"
+	ColorRed          = "\u001b[31m"
+	ColorGreen        = "\u001b[32m"
+	ColorYellow       = "\u001b[33m"
+	ColorBlue         = "\u001b[34m"
+	ColorReset        = "\u001b[0m"
+)
+
+func colorize(color Color, message string) {
+	fmt.Println(string(color), message, string(ColorReset))
+}
+func colorizeSameLine(color Color, message string) {
+	fmt.Print(string(color), message, string(ColorReset))
+}
+
+func PrintUis(sign string, amount int, bottom bool){
+	var sum string
+	//var i int
+	for i := 1; i < amount; i++ {
+		//fmt.Println(sum,"|")
+
+		sum+=sign
+
+	}
+
+	a:= sum+ "|"
+	if bottom{
+		colorize(ColorRed, "||")
+		colorize(ColorRed, a)
+		colorize(ColorRed, "|")
+	}else{
+		colorize(ColorYellow, a)
+	}
+
+
+}
+
+//logs only value with color
+func LogTrace(name string, output interface{}){
+	PrintUis("=", 40, false)
+	colorizeSameLine(ColorGreen, name)
+	o:=fmt.Sprintf("=%v",output)
+	colorize(ColorRed, o)
+	pc := make([]uintptr, 15)
+	n := runtime.Callers(2, pc)
+	frames := runtime.CallersFrames(pc[:n])
+	frame, _ := frames.Next()
+	log.Printf("%s:%d\n", frame.File, frame.Line)
+	PrintUis("=", 40, false)
+
+}
 
 func LogValue(name string,errs interface{}){
 

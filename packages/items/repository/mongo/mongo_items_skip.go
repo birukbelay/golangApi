@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"fmt"
+	"github.com/birukbelay/item/utils/helpers"
 	"go.mongodb.org/mongo-driver/bson"
 	"reflect"
 	"strconv"
@@ -29,8 +30,11 @@ func (pmr ProductMongoRepo) ItemsByFilter(limit int, offsetCursor, searchField,
 	findOptions.SetSort(bson.D{{sort, sortWay},{"_id",1}})
 	offsetsVal, err := strconv.Atoi(offsetCursor)
 
+	if offsetsVal<1{
+		offsetsVal=1
+	}
 	page:= limit * (offsetsVal-1)
-	fmt.Println("page", page)
+	helpers.LogTrace("page", page)
 	findOptions.SetSkip(int64(page))
 	query := bson.D{}
 	//a:=bson.D{{"brand", bson.D{{ "$in", bson.A{"samsung", "Bob"} }}  }}
@@ -103,8 +107,6 @@ func (pmr ProductMongoRepo) ItemsByFilter(limit int, offsetCursor, searchField,
 		}
 		items = append(items, item)
 
-
-
 	}
 
 	if err := cursor.Err(); err != nil {
@@ -112,9 +114,8 @@ func (pmr ProductMongoRepo) ItemsByFilter(limit int, offsetCursor, searchField,
 		return nil,"","", errs
 	}
 	fmt.Println("items--", items)
-	goPrev := fmt.Sprintf("%v_%v", "firstValue", "stringFirstValue")
-	goNext := fmt.Sprintf("%v_%v", "lastValue", "stringLastValue")
-	return items, goPrev, goNext, nil
+
+	return items, "", "", nil
 
 
 }

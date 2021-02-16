@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -10,12 +11,13 @@ import (
 	"time"
 
 	"github.com/birukbelay/item/entity"
-	"github.com/birukbelay/item/models/items"
+	"github.com/birukbelay/item/packages/items"
 )
 //var a =[]error{}
 // UserMongoRepo implements the items.CategoriesRepository interface
 type ProductMongoRepo struct {
 	collection *mongo.Collection
+
 }
 
 // NewUserMongoRepo will create a new object of CategoriesGormRepo
@@ -23,7 +25,7 @@ func NewProductMongoRepo(C *mongo.Collection) items.ItemRepository {
 	return &ProductMongoRepo{collection: C}
 }
 
-var ctx, _ = context.WithTimeout(context.Background(), 20*time.Second)
+var ctx, _ = context.WithTimeout(context.Background(), 60 *time.Second)
 //var ctx = context.Background()
 
 func (pmr ProductMongoRepo) Items(limit, offset int) ([]entity.Item, []error) {
@@ -108,8 +110,15 @@ func (pmr ProductMongoRepo) UpdateItem(item *entity.Item) (*entity.Item, []error
 
 	fmt.Println(res.UpsertedCount)
 	fmt.Println(res.UpsertedID)
-	//fmt.Printf("%v, %T",res, res)
-	return item, nil
+	if res.MatchedCount>0{
+		//fmt.Printf("%v, %T",res, res)
+		return item, nil
+
+	}
+	var errs []error
+	errs=append(errs, errors.New("not updated"))
+	return nil, errs
+
 }
 
 // DeleteItem ...

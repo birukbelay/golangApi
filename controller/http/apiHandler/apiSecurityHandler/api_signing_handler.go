@@ -159,6 +159,8 @@ func (uh *UserHandler) ApiSignup(w http.ResponseWriter, r *http.Request,  _ http
 
 
 	user.Roles = append(user.Roles, entity.Admin)
+	user.Role = entity.Admin
+
 	session, er := CreateSession(user)
 	if er!=nil{
 		helpers.RenderResponse(w, global.UserNotCreated, global.StatusInternalServerError, 500)

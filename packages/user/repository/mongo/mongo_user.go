@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/birukbelay/item/entity"
-	"github.com/birukbelay/item/models/user"
+	"github.com/birukbelay/item/packages/user"
 	"github.com/birukbelay/item/utils/helpers"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"

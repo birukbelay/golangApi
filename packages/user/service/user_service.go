@@ -1,7 +1,7 @@
 package service
 
 import (
-	user2 "github.com/birukbelay/item/models/user"
+	user2 "github.com/birukbelay/item/packages/user"
 	"github.com/birukbelay/item/entity"
 )
 

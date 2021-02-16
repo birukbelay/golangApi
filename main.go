@@ -23,15 +23,15 @@ import (
 	"github.com/birukbelay/item/config"
 	"github.com/birukbelay/item/config/db"
 	"github.com/birukbelay/item/entity"
-	mgoProductRepo "github.com/birukbelay/item/models/items/repository/mongo"
-	mgoUserRepo "github.com/birukbelay/item/models/user/repository/mongo"
-	// userRepo "github.com/birukbelay/items/models/user/repository"
+	mgoProductRepo "github.com/birukbelay/item/packages/items/repository/mongo"
+	mgoUserRepo "github.com/birukbelay/item/packages/user/repository/mongo"
+	// userRepo "github.com/birukbelay/items/packages/user/repository"
 
 	"github.com/birukbelay/item/controller/http/apiHandler/apiSecurityHandler"
-	userService "github.com/birukbelay/item/models/user/service"
+	userService "github.com/birukbelay/item/packages/user/service"
 
 	"github.com/birukbelay/item/controller/http/apiHandler/productHandler"
-	ZitemService "github.com/birukbelay/item/models/items/services"
+	ZitemService "github.com/birukbelay/item/packages/items/services"
 )
 
 func createTables(dbconn *gorm.DB) []error {
@@ -177,7 +177,7 @@ func main() {
 	//Products
 	router.GET("/api/items", itemHandler.GetItems)
 	router.GET("/api/items/filter", itemHandler.GetFilteredItems)
-	router.GET("/api/items/get/:id",  itemHandler.GetSingleItem)
+	router.GET("/api/item/:id",  itemHandler.GetSingleItem)
 	//router.POST("/api/items/create",sh.Authenticated(sh.Authorized(itemHandler.InitiateItem)))
 	router.POST("/api/items",itemHandler.CreateItem)
 	router.PUT("/api/items/update/:id", itemHandler.UpdateItem)
@@ -200,9 +200,10 @@ func main() {
 
 	router.ServeFiles("/assets/*filepath", http.Dir("./public/assets"))
 
-	fs := http.FileServer(http.Dir("./public/assets"))
-	http.Handle("/assets/", http.StripPrefix("/assets", fs))
-	//http.Handle("/assets/", http.StripPrefix("/assets", http.FileServer(http.Dir("./assets"))))
+	//fs := http.FileServer(http.Dir("./public/assets"))
+	//http.Handle("/assets/", http.StripPrefix("/assets", fs))
+
+	http.Handle("/assets/", http.StripPrefix("/assets", http.FileServer(http.Dir("./assets"))))
 	http.ListenAndServe(":8181", handler)
 	fmt.Println("...8181...")
 

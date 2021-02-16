@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/birukbelay/item/models/items"
+	"github.com/birukbelay/item/packages/items"
 	"github.com/birukbelay/item/utils/global"
 	"github.com/birukbelay/item/utils/helpers"
 	"github.com/julienschmidt/httprouter"
@@ -53,6 +53,7 @@ func (aih *AdminItemHandler) GetItems(w http.ResponseWriter, r *http.Request, _ 
 
 	Items, errs := aih.itemService.Items(limit, offset)
 	if len(errs) > 0 {
+		helpers.LogTrace("item fetch err", err)
 		helpers.HandleErr(w, errs, global.StatusNotFound, http.StatusNotFound)
 		return
 	}
@@ -78,7 +79,7 @@ func (aih *AdminItemHandler) GetSingleItem(w http.ResponseWriter, _ *http.Reques
 	// calling the service
 	item, errs := aih.itemService.Item(id)
 	if len(errs) > 0 {
-		helpers.HandleErr(w, errs, global.StatusNotFound, http.StatusNotFound)
+		helpers.RenderResponse(w, errs, global.StatusNotFound, http.StatusNotFound)
 		return
 	}
 
@@ -121,15 +122,13 @@ func (aih *AdminItemHandler) CreateItem(w http.ResponseWriter, r *http.Request, 
 	// IMAGE UPLOAD
 	fmt.Println("beSess..")
 	userSess, _ := r.Context().Value(entity.CtxUserSessionKey).(*entity.User)
-	var uid string
-	if userSess!=nil{
-		uid=userSess.ID.Hex()
-	}
+
+
 
 	// IMAGE UPLOAD
 	fmt.Println("beUpl..",userSess)
 
-	img, er, status, statusCode := helpers.UploadFile(r, false, "", uid )
+	img, er, status, statusCode := helpers.UploadFile(r, false, "", "items" )
 	if er != nil {
 		helpers.RenderResponse(w, err, status, statusCode)
 		return
@@ -156,6 +155,7 @@ func (aih *AdminItemHandler) CreateItem(w http.ResponseWriter, r *http.Request, 
 func (aih *AdminItemHandler) UpdateItem(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	id := ps.ByName("id")
+	helpers.LogTrace("updateId", id)
 	//query := r.URL.Query()
 
 	//hasImage, err := strconv.ParseBool(query.Get("hasImage"))
@@ -169,6 +169,12 @@ func (aih *AdminItemHandler) UpdateItem(w http.ResponseWriter, r *http.Request, 
 		helpers.RenderResponse(w, err, global.ParseFile, http.StatusBadRequest)
 		return
 	}
+	valid, VErrors := FormValidators.FormItemValidator(r.PostForm)
+	if !valid {
+		helpers.RenderResponse(w, VErrors, global.Validation, http.StatusBadRequest)
+		return
+	}
+
 
 	itm, errs := aih.itemService.Item(id)
 	if len(errs) > 0 {
@@ -177,38 +183,46 @@ func (aih *AdminItemHandler) UpdateItem(w http.ResponseWriter, r *http.Request, 
 	}
 
 
-
-
-	valid, VErrors := FormValidators.FormItemValidator(r.PostForm)
-	if !valid {
-		helpers.RenderResponse(w, VErrors, global.Validation, http.StatusBadRequest)
-		return
-	}
 	item, err := InitiateItem(r.PostForm)
 	if err != nil {
 		helpers.RenderResponse(w, err, global.ItemInitialization, http.StatusBadRequest)
 		return
 	}
+	itm.Price=item.Price
+	itm.Categories=item.Categories
+	itm.Name=item.Name
+	itm.Description=item.Description
+
+
+	helpers.LogTrace("foundItem FOr Update", itm)
+
+
+
+
 
 
 	imageChanged , er := strconv.ParseBool(r.PostForm.Get("imageChanged"))
 	if er!=nil{
 		imageChanged =false
 	}
-	userSess, _ := r.Context().Value(entity.CtxUserSessionKey).(*entity.User)
+	//userSess, _ := r.Context().Value(entity.CtxUserSessionKey).(*entity.User)
+
 
 	image := itm.Image
+
+
 	if imageChanged {
-		img, err, status, statusCode := helpers.UploadFile(r,true,image, userSess.ID.Hex())
+		img, err, status, statusCode := helpers.UploadFile(r,true,image,"items")
 		if err != nil {
+			helpers.LogTrace("UpdateImgErr", err)
 			helpers.RenderResponse(w, err, status, statusCode)
 			img = itm.Image
 			return
 		}
-		item.Image = img
+		itm.Image = img
 		//TODO make a function to Change the image, Delete the Image
 	}else {
-		item.Image = itm.Image
+		itm.Image = itm.Image
 	}
 
 
@@ -216,13 +230,13 @@ func (aih *AdminItemHandler) UpdateItem(w http.ResponseWriter, r *http.Request, 
 	//TODo make Updated count and UserId
 
 	// calling the service
-	item, errs = aih.itemService.UpdateItem(item)
+	item, errs = aih.itemService.UpdateItem(itm)
 	if len(errs) > 0 {
 		helpers.HandleErr(w, errs, global.StatusNotFound, 404)
 		return
 	}
 
-	helpers.RenderResponse(w, item, global.Success, http.StatusOK)
+	helpers.RenderResponse(w, itm, global.Success, http.StatusOK)
 	return
 }
 
@@ -236,7 +250,7 @@ func (aih *AdminItemHandler) DeleteItem(w http.ResponseWriter, r *http.Request, 
 	fmt.Println(item)
 
 	if len(errs) > 0 {
-		helpers.HandleErr(w, errs, global.StatusNotFound, http.StatusNotFound)
+		helpers.RenderResponse(w, errs, global.StatusNotFound, http.StatusNotFound)
 		return
 	}
 	// calling the service
@@ -260,13 +274,16 @@ func InitiateItem(values url.Values) (*entity.Item, error) {
 	}
 
 
+	category:= values.Get("category")
+	var categories []string
+	categories=append(categories, category)
 	item := &entity.Item{
 		Name:         values.Get("name"),
 		Description:  values.Get("description"),
 		//Image:        values.Get("image"),
-		//Categories: values.Get("categories"),
+		Categories: categories ,
 		Type:     values.Get("type"),
-		Language: values.Get("language"),
+
 		Price:    int(year),
 
 	}
