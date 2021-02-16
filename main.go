@@ -14,7 +14,6 @@ import (
 	"github.com/joho/godotenv"
 	//"github.com/tkanos/gonfig"
 
-	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/julienschmidt/httprouter"
@@ -62,11 +61,6 @@ func main() {
 
 	conf := config.New()
 
-
-	//config := entity.PostgresConfig{}
-	//err := gonfig.GetConf("/config/config.json", &config)
-	//p:=fmt.Sprintf("postgres://"+config.PG_USER_NAME+":"+config.PG_PASS+"@localhost/"+config.PG_DB_NAME+"?sslmode=disable")
-	//pgDbconn, err := gorm.Open("postgres",p)
 
 
 	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>|
@@ -131,30 +125,6 @@ func main() {
 	categoriesHandler := productHandler.NewAdminCategoriesHandler(categoriesService)
 
 
-	/*===================n  Gin=================*/
-	//route := gin.Default()
-
-	//// Serve frontend static files
-	//route.Use(static.Serve("/assets", static.LocalFile("./public/assets", true)))
-	//
-	//// Setup route group for the API
-	//api := route.Group("/api")
-	//{
-	//	api.GET("/", func(c *gin.Context) {
-	//		c.JSON(http.StatusOK, gin.H {
-	//			"message": "pong",
-	//		})
-	//	})
-	//}
-	//
-	//items := api.Group("/items")
-	//{
-	//	items.GET("/", JokeHandler)
-	//}
-
-	//========== Gin===============
-
-
 
 
 
@@ -193,10 +163,6 @@ func main() {
 
 
 
-	//api.GET("/jokes", JokeHandler)
-
-	//route.Run(":8080")
-
 
 	router.ServeFiles("/assets/*filepath", http.Dir("./public/assets"))
 
@@ -211,12 +177,6 @@ func main() {
 
 }
 
-func JokeHandler(c *gin.Context) {
-	c.Header("Content-Type", "application/json")
-	c.JSON(http.StatusOK, gin.H {
-		"message":"Jokes handler not implemented yet",
-	})
-}
 
 
 
@@ -226,26 +186,3 @@ func JokeHandler(c *gin.Context) {
 
 
 
-
-
-func startHTTPServer(r http.Handler) *http.Server {
-	srv := &http.Server{
-		Handler: r,
-		Addr:    ":8080",
-		// Good practice: enforce timeouts for servers you create!
-		//WriteTimeout: 15 * time.Second,
-		//ReadTimeout:  15 * time.Second,
-	}
-
-	go func() {
-		if err := srv.ListenAndServe(); err != nil {
-			// cannot panic, because this probably is an intentional close
-			log.Printf("--------- %s", err)
-		} else {
-			log.Printf("Httpserver: ListenAndServe() closing...")
-		}
-	}()
-
-	// returning reference so caller can call Shutdown()
-	return srv
-}
