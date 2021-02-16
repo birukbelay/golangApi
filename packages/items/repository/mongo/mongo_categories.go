@@ -17,7 +17,7 @@ type CategoriesMongoRepo struct {
 }
 
 
-//TODO
+
 func (cmr CategoriesMongoRepo) Categories(limit int , offset string) ([]entity.Categories, []error) {
 	Categoriess :=[]entity.Categories{}
 
@@ -61,7 +61,7 @@ func (cmr CategoriesMongoRepo) Categories(limit int , offset string) ([]entity.C
 	return Categoriess, nil
 }
 
-//TODO
+
 func (cmr CategoriesMongoRepo) Category(id string) (*entity.Categories, []error) {
 	categories := entity.Categories{}
 
@@ -80,7 +80,7 @@ func (cmr CategoriesMongoRepo) Category(id string) (*entity.Categories, []error)
 	return &categories, nil
 }
 
-//TODO
+
 func (cmr CategoriesMongoRepo) UpdateCategories(categories *entity.Categories) (*entity.Categories, []error) {
 	update := bson.M{"$set": categories}
 	helpers.LogTrace("id", categories.ID)
@@ -105,7 +105,7 @@ func (cmr CategoriesMongoRepo) UpdateCategories(categories *entity.Categories) (
 	return nil, errs
 }
 
-//TODO
+
 func (cmr CategoriesMongoRepo) DeleteCategories(id string) (*entity.Categories, []error) {
 	oid, _ := primitive.ObjectIDFromHex(id)
 	filter := bson.D{{"_id", oid}}
@@ -120,7 +120,7 @@ func (cmr CategoriesMongoRepo) DeleteCategories(id string) (*entity.Categories, 
 	//fmt.Println(result.DeletedCount)
 	return nil, nil
 }
-//TODO
+
 func (cmr CategoriesMongoRepo) StoreCategories(categories *entity.Categories) (*entity.Categories, []error) {
 
 	fmt.Println(categories)

@@ -110,7 +110,7 @@ func (aih *AdminCategoriesHandler) CreateCategories(w http.ResponseWriter, r *ht
 	if er!=nil{
 		helpers.RenderResponse(w, er, global.CategoriesInitialization, http.StatusBadRequest)
 	}
-	//TODO fill the rest of the categories fields
+
 
 
 	//categories.ID = primitive.NewObjectID()
@@ -200,10 +200,6 @@ func (aih *AdminCategoriesHandler) UpdateCategories(w http.ResponseWriter, r *ht
 	}
 
 
-	//oid, _ := primitive.ObjectIDFromHex(id)
-	//categories.ID =  oid
-	//TODo make Updated count and UserId
-
 
 
 	// calling the service
@@ -224,7 +220,7 @@ func (aih *AdminCategoriesHandler) DeleteCategories(w http.ResponseWriter, r *ht
 
 	// calling the service
 	categories, errs := aih.categoriesService.Category(id)
-	//TODO do stg with categories
+
 	helpers.LogTrace("ctg", categories)
 
 	if len(errs) > 0 {
@@ -232,7 +228,7 @@ func (aih *AdminCategoriesHandler) DeleteCategories(w http.ResponseWriter, r *ht
 		return
 	}
 	// calling the service
-	_, errs = aih.categoriesService.DeleteCategories(id)
+	categories, errs = aih.categoriesService.DeleteCategories(id)
 	if len(errs) > 0 {
 		helpers.HandleErr(w, errs, global.StatusInternalServerError, http.StatusInternalServerError)
 		return

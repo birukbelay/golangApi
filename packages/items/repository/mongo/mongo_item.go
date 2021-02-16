@@ -171,7 +171,7 @@ func (pmr ProductMongoRepo) ItemsByCategories(limit, offset int, categories stri
 	return itm, nil
 
 }
-//TODO
+
 func (pmr ProductMongoRepo) StoreManyItems(items []interface{}) ([]interface{}, []error) {
 
 	//items := []interface{}{item1, item2}

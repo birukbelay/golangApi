@@ -49,7 +49,7 @@ func (uh *UserHandler) Authenticated(next httprouter.Handle) httprouter.Handle {
 
 		uh.loggedInUser= &claims.User
 
-		//FIXME how Do you use it properly
+
 		ctx := context.WithValue(r.Context(), entity.CtxUserSessionKey,  claims.User)
 		next(w, r.WithContext(ctx), ps)
 	}

@@ -227,7 +227,7 @@ func (aih *AdminItemHandler) UpdateItem(w http.ResponseWriter, r *http.Request, 
 
 
 
-	//TODo make Updated count and UserId
+
 
 	// calling the service
 	item, errs = aih.itemService.UpdateItem(itm)
