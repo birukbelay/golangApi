@@ -117,6 +117,11 @@ func (cmr CategoriesMongoRepo) DeleteCategories(ctx context.Context, id string) 
 		errs = append(errs, err)
 		return nil, errs
 	}
+	if res.DeletedCount<1{
+		var errs []error
+		errs=append(errs, errors.New("not updated"))
+		return nil, errs
+	}
 	helpers.LogTrace("DelCount", res.DeletedCount)
 	//fmt.Println(result.DeletedCount)
 	return nil, nil
@@ -125,6 +130,9 @@ func (cmr CategoriesMongoRepo) DeleteCategories(ctx context.Context, id string) 
 func (cmr CategoriesMongoRepo) StoreCategories(ctx context.Context, categories *entity.Categories) (*entity.Categories, []error) {
 
 	fmt.Println(categories)
+	ids:= primitive.NewObjectID()
+	categories.ID=ids
+
 	id, err := cmr.collection.InsertOne(ctx, categories)
 	if err!=nil{
 		var a []error

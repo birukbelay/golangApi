@@ -9,7 +9,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 //var a =[]error{}
 // UserMongoRepo implements the items.CategoriesRepository interface
@@ -76,9 +75,11 @@ func (pmr ProductMongoRepo) Item(ctx context.Context, id string) (*entity.Item, 
 // StoreItem stores an items into database
 func (pmr ProductMongoRepo) StoreItem(ctx context.Context, item *entity.Item) (*entity.Item, []error) {
 
-	itm := item
 
-	id, err := pmr.collection.InsertOne(ctx, itm)
+	ids:= primitive.NewObjectID()
+	item.ID=ids
+
+	id, err := pmr.collection.InsertOne(ctx, item)
 	fmt.Println(",,,,,,,,.")
 	if err!=nil{
 		fmt.Println("err..",err, "ctX",ctx)
@@ -87,9 +88,9 @@ func (pmr ProductMongoRepo) StoreItem(ctx context.Context, item *entity.Item) (*
 		a= append(a, err)
 		return nil, a
 	}
-	itm.ID=id.InsertedID.(primitive.ObjectID)
+	item.ID=id.InsertedID.(primitive.ObjectID)
 
-	return itm, nil
+	return item, nil
 }
 
 // UpdateItem ...
@@ -131,53 +132,4 @@ func (pmr ProductMongoRepo) DeleteItem(ctx context.Context, id string) (int64, [
 	}
 	//fmt.Println(result.DeletedCount)
 	return result.DeletedCount, nil
-}
-
-func (pmr ProductMongoRepo) ItemsByCategories( ctx context.Context, limit, offset int, categories string) ([]entity.Item, []error) {
-
-	itm := []entity.Item{}
-
-	findOptions := options.Find()
-	findOptions.SetLimit(int64(limit))
-
-	var errs []error
-	cursor, err := pmr.collection.Find(ctx, bson.M{"categories": categories}, findOptions)
-
-	if err != nil {
-
-		errs = append(errs, err)
-		return nil, errs
-	}
-	defer cursor.Close(ctx)
-
-	for cursor.Next(ctx) {
-		var item entity.Item
-		err := cursor.Decode(&item)
-		if err != nil {
-			errs = append(errs, err)
-			return nil, errs
-		}
-		itm = append(itm, item)
-	}
-
-	if err := cursor.Err(); err != nil {
-		errs = append(errs, err)
-		return nil, errs
-	}
-
-	return itm, nil
-
-}
-
-func (pmr ProductMongoRepo) StoreManyItems(ctx context.Context, items []interface{}) ([]interface{}, []error) {
-
-	//items := []interface{}{item1, item2}
-
-	insertManyResult, err := pmr.collection.InsertMany(ctx, items)
-	if err != nil {
-		return nil , nil
-	}
-
-
-	return insertManyResult.InsertedIDs, nil
 }
