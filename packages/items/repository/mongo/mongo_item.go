@@ -4,14 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/birukbelay/item/entity"
+	"github.com/birukbelay/item/packages/items"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
-
-	"github.com/birukbelay/item/entity"
-	"github.com/birukbelay/item/packages/items"
 )
 //var a =[]error{}
 // UserMongoRepo implements the items.CategoriesRepository interface
@@ -25,10 +23,8 @@ func NewProductMongoRepo(C *mongo.Collection) items.ItemRepository {
 	return &ProductMongoRepo{collection: C}
 }
 
-var ctx, _ = context.WithTimeout(context.Background(), 60 *time.Second)
-//var ctx = context.Background()
 
-func (pmr ProductMongoRepo) Items(limit, offset int) ([]entity.Item, []error) {
+func (pmr ProductMongoRepo) Items(ctx context.Context, limit, offset int) ([]entity.Item, []error) {
 
 	itm :=[]entity.Item{}
 
@@ -58,7 +54,7 @@ func (pmr ProductMongoRepo) Items(limit, offset int) ([]entity.Item, []error) {
 }
 
 // Item gets a single items from database
-func (pmr ProductMongoRepo) Item(id string) (*entity.Item, []error) {
+func (pmr ProductMongoRepo) Item(ctx context.Context, id string) (*entity.Item, []error) {
 	item := entity.Item{}
 
 
@@ -78,11 +74,11 @@ func (pmr ProductMongoRepo) Item(id string) (*entity.Item, []error) {
 }
 
 // StoreItem stores an items into database
-func (pmr ProductMongoRepo) StoreItem(item *entity.Item) (*entity.Item, []error) {
+func (pmr ProductMongoRepo) StoreItem(ctx context.Context, item *entity.Item) (*entity.Item, []error) {
 
 	itm := item
 
-	_, err := pmr.collection.InsertOne(ctx, itm)
+	id, err := pmr.collection.InsertOne(ctx, itm)
 	fmt.Println(",,,,,,,,.")
 	if err!=nil{
 		fmt.Println("err..",err, "ctX",ctx)
@@ -91,12 +87,13 @@ func (pmr ProductMongoRepo) StoreItem(item *entity.Item) (*entity.Item, []error)
 		a= append(a, err)
 		return nil, a
 	}
+	itm.ID=id.InsertedID.(primitive.ObjectID)
 
 	return itm, nil
 }
 
 // UpdateItem ...
-func (pmr ProductMongoRepo) UpdateItem(item *entity.Item) (*entity.Item, []error) {
+func (pmr ProductMongoRepo) UpdateItem(ctx context.Context, item *entity.Item) (*entity.Item, []error) {
 	update := bson.M{"$set": item}
 
 	filter := bson.D{{"_id", item.ID}}
@@ -122,7 +119,7 @@ func (pmr ProductMongoRepo) UpdateItem(item *entity.Item) (*entity.Item, []error
 }
 
 // DeleteItem ...
-func (pmr ProductMongoRepo) DeleteItem(id string) (int64, []error) {
+func (pmr ProductMongoRepo) DeleteItem(ctx context.Context, id string) (int64, []error) {
 	oid, _ := primitive.ObjectIDFromHex(id)
 	filter := bson.D{{"_id", oid}}
 
@@ -136,7 +133,7 @@ func (pmr ProductMongoRepo) DeleteItem(id string) (int64, []error) {
 	return result.DeletedCount, nil
 }
 
-func (pmr ProductMongoRepo) ItemsByCategories(limit, offset int, categories string) ([]entity.Item, []error) {
+func (pmr ProductMongoRepo) ItemsByCategories( ctx context.Context, limit, offset int, categories string) ([]entity.Item, []error) {
 
 	itm := []entity.Item{}
 
@@ -172,7 +169,7 @@ func (pmr ProductMongoRepo) ItemsByCategories(limit, offset int, categories stri
 
 }
 
-func (pmr ProductMongoRepo) StoreManyItems(items []interface{}) ([]interface{}, []error) {
+func (pmr ProductMongoRepo) StoreManyItems(ctx context.Context, items []interface{}) ([]interface{}, []error) {
 
 	//items := []interface{}{item1, item2}
 

@@ -1,6 +1,7 @@
 package productHandler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/birukbelay/item/entity"
@@ -8,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"time"
 
 	"github.com/birukbelay/item/packages/items"
 	"github.com/birukbelay/item/utils/global"
@@ -31,6 +33,9 @@ func NewAdminItemHandler(itmService items.ItemService) *AdminItemHandler {
 // GetItems handles GET /v1/admin/Items request
 func (aih *AdminItemHandler) GetItems(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
+	contxt := r.Context()
+	var ctx, _ = context.WithTimeout(contxt, 30*time.Second)
+
 	query := r.URL.Query()
 
 	limit, err := strconv.Atoi(query.Get("limit"))
@@ -51,7 +56,7 @@ func (aih *AdminItemHandler) GetItems(w http.ResponseWriter, r *http.Request, _ 
 
 	var offset = page * limit
 
-	Items, errs := aih.itemService.Items(limit, offset)
+	Items, errs := aih.itemService.Items(ctx, limit, offset)
 	if len(errs) > 0 {
 		helpers.LogTrace("item fetch err", err)
 		helpers.HandleErr(w, errs, global.StatusNotFound, http.StatusNotFound)
@@ -71,13 +76,16 @@ func (aih *AdminItemHandler) GetItems(w http.ResponseWriter, r *http.Request, _ 
 }
 
 // GetSingleItem handles GET /items/create:id request
-func (aih *AdminItemHandler) GetSingleItem(w http.ResponseWriter, _ *http.Request, ps httprouter.Params) {
+func (aih *AdminItemHandler) GetSingleItem(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	id := ps.ByName("id")
 	fmt.Println(id)
+	contxt := r.Context()
+	var ctx, _ = context.WithTimeout(contxt, 30*time.Second)
+
 
 	// calling the service
-	item, errs := aih.itemService.Item(id)
+	item, errs := aih.itemService.Item(ctx, id)
 	if len(errs) > 0 {
 		helpers.RenderResponse(w, errs, global.StatusNotFound, http.StatusNotFound)
 		return
@@ -97,6 +105,9 @@ func (aih *AdminItemHandler) GetSingleItem(w http.ResponseWriter, _ *http.Reques
 
 // InitiateItem handles POST /v1/admin/Items request
 func (aih *AdminItemHandler) CreateItem(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+
+	contxt := r.Context()
+	var ctx, _ = context.WithTimeout(contxt, 30*time.Second)
 
 	if err := r.ParseMultipartForm(global.MaxUploadSize); err != nil {
 		//fmt.Printf("Could not parse multipart form: %v\n", err)
@@ -137,7 +148,7 @@ func (aih *AdminItemHandler) CreateItem(w http.ResponseWriter, r *http.Request, 
 
 
 	// calling the service
-	item, errs := aih.itemService.StoreItem(item)
+	item, errs := aih.itemService.StoreItem(ctx, item)
 	if len(errs) > 0 {
 		helpers.HandleErr(w, errs, global.StatusInternalServerError, 404)
 		return
@@ -153,6 +164,9 @@ func (aih *AdminItemHandler) CreateItem(w http.ResponseWriter, r *http.Request, 
 
 // UpdateItem handles PUT /items/update/:id request
 func (aih *AdminItemHandler) UpdateItem(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+
+	contxt := r.Context()
+	var ctx, _ = context.WithTimeout(contxt, 30*time.Second)
 
 	id := ps.ByName("id")
 	helpers.LogTrace("updateId", id)
@@ -176,7 +190,7 @@ func (aih *AdminItemHandler) UpdateItem(w http.ResponseWriter, r *http.Request, 
 	}
 
 
-	itm, errs := aih.itemService.Item(id)
+	itm, errs := aih.itemService.Item(ctx, id)
 	if len(errs) > 0 {
 		helpers.HandleErr(w, errs, global.StatusNotFound, http.StatusNotFound)
 		return
@@ -230,7 +244,7 @@ func (aih *AdminItemHandler) UpdateItem(w http.ResponseWriter, r *http.Request, 
 
 
 	// calling the service
-	item, errs = aih.itemService.UpdateItem(itm)
+	item, errs = aih.itemService.UpdateItem(ctx, itm)
 	if len(errs) > 0 {
 		helpers.HandleErr(w, errs, global.StatusNotFound, 404)
 		return
@@ -243,10 +257,13 @@ func (aih *AdminItemHandler) UpdateItem(w http.ResponseWriter, r *http.Request, 
 // DeleteItem handles DELETE /items/remove/:id request
 func (aih *AdminItemHandler) DeleteItem(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
+	contxt := r.Context()
+	var ctx, _ = context.WithTimeout(contxt, 30*time.Second)
+
 	id := ps.ByName("id")
 
 	// calling the service
-	item, errs := aih.itemService.Item(id)
+	item, errs := aih.itemService.Item(ctx, id)
 	fmt.Println(item)
 
 	if len(errs) > 0 {
@@ -254,7 +271,7 @@ func (aih *AdminItemHandler) DeleteItem(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 	// calling the service
-	count, errs := aih.itemService.DeleteItem(id)
+	count, errs := aih.itemService.DeleteItem(ctx, id)
 	if len(errs) > 0 {
 		helpers.HandleErr(w, errs, global.StatusInternalServerError, http.StatusInternalServerError)
 		return

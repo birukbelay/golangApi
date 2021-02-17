@@ -1,6 +1,7 @@
 package productHandler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/birukbelay/item/utils/global"
@@ -8,10 +9,14 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 // GetItems handles GET /v1/admin/Items request
 func (aih *AdminItemHandler) GetFilteredItems(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+
+	contxt := r.Context()
+	var ctx, _ = context.WithTimeout(contxt, 30*time.Second)
 
 	query := r.URL.Query()
 	fmt.Println("URLQuery", query)
@@ -60,7 +65,7 @@ func (aih *AdminItemHandler) GetFilteredItems(w http.ResponseWriter, r *http.Req
 
 
 
-	Items,first, last, errs := aih.itemService.ItemsByFilter(limit, offsetValue, searchField, categories, brand, types, sort, sortWay, minPrice, maxPrice)
+	Items,first, last, errs := aih.itemService.ItemsByFilter(ctx, limit, offsetValue, searchField, categories, brand, types, sort, sortWay, minPrice, maxPrice)
 	if len(errs) > 0 {
 		helpers.HandleErr(w, errs, global.StatusNotFound, http.StatusNotFound)
 		return
@@ -88,6 +93,9 @@ func (aih *AdminItemHandler) SearchItems(w http.ResponseWriter, r *http.Request,
 
 	query := r.URL.Query()
 
+	contxt := r.Context()
+	var ctx, _ = context.WithTimeout(contxt, 30*time.Second)
+
 	limit, err := strconv.Atoi(query.Get("limit"))
 	if err != nil {
 		helpers.HandleErr(w, err, global.StatusBadRequest, 400)
@@ -106,7 +114,7 @@ func (aih *AdminItemHandler) SearchItems(w http.ResponseWriter, r *http.Request,
 
 	var offset = page * limit
 
-	Items, errs := aih.itemService.Items(limit, offset)
+	Items, errs := aih.itemService.Items(ctx, limit, offset)
 	if len(errs) > 0 {
 		helpers.HandleErr(w, errs, global.StatusNotFound, http.StatusNotFound)
 		return

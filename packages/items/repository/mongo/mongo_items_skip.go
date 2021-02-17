@@ -1,6 +1,7 @@
 package mongo
 
 import (
+	"context"
 	"fmt"
 	"github.com/birukbelay/item/utils/helpers"
 	"go.mongodb.org/mongo-driver/bson"
@@ -15,7 +16,7 @@ import (
 
 
 //ItemsBySkipFilter ...
-func (pmr ProductMongoRepo) ItemsByFilter(limit int, offsetCursor, searchField,
+func (pmr ProductMongoRepo) ItemsByFilter(ctx context.Context, limit int, offsetCursor, searchField,
 	categories, brand, types string,
 	sort string, sortWay int,
 	minYear, maxYear int) ([]entity.Item,string, string, []error) {

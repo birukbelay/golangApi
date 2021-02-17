@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"github.com/birukbelay/item/entity"
 	"github.com/birukbelay/item/packages/items"
 	"github.com/birukbelay/item/utils/helpers"
@@ -18,9 +19,9 @@ func NewCategoriesService(CatRepo items.CategoriesRepository) items.CategoriesSe
 
 
 // Categories returns list of Categoriess
-func (cs *CategoriesService) Categories(limit int , offset string) ([]entity.Categories, []error) {
+func (cs *CategoriesService) Categories(ctx context.Context, limit int , offset string) ([]entity.Categories, []error) {
 
-	Categoriess, errs := cs.categoriesRepo.Categories(limit, offset)
+	Categoriess, errs := cs.categoriesRepo.Categories(ctx, limit, offset)
 
 	if len(errs) > 0 {
 		return nil, errs
@@ -30,9 +31,9 @@ func (cs *CategoriesService) Categories(limit int , offset string) ([]entity.Cat
 }
 
 // StoreCategories persists new categories information
-func (cs *CategoriesService) StoreCategories(categories *entity.Categories) (*entity.Categories, []error) {
+func (cs *CategoriesService) StoreCategories(ctx context.Context, categories *entity.Categories) (*entity.Categories, []error) {
 
-	cat, errs := cs.categoriesRepo.StoreCategories(categories)
+	cat, errs := cs.categoriesRepo.StoreCategories(ctx, categories)
 
 	if len(errs) > 0 {
 		return nil, errs
@@ -42,9 +43,9 @@ func (cs *CategoriesService) StoreCategories(categories *entity.Categories) (*en
 }
 
 // Category returns a categories object with a given id
-func (cs *CategoriesService) Category(id string) (*entity.Categories, []error) {
+func (cs *CategoriesService) Category(ctx context.Context, id string) (*entity.Categories, []error) {
 
-	c, errs := cs.categoriesRepo.Category(id)
+	c, errs := cs.categoriesRepo.Category(ctx, id)
 
 	if len(errs) > 0 {
 		return c, errs
@@ -54,10 +55,10 @@ func (cs *CategoriesService) Category(id string) (*entity.Categories, []error) {
 }
 
 // UpdateCategories updates a cateogory with new data
-func (cs *CategoriesService) UpdateCategories(categories *entity.Categories) (*entity.Categories, []error) {
+func (cs *CategoriesService) UpdateCategories(ctx context.Context, categories *entity.Categories) (*entity.Categories, []error) {
 
 	helpers.LogTrace("id", categories.ID)
-	cat, errs := cs.categoriesRepo.UpdateCategories(categories)
+	cat, errs := cs.categoriesRepo.UpdateCategories(ctx, categories)
 
 	if len(errs) > 0 {
 		return nil, errs
@@ -67,9 +68,9 @@ func (cs *CategoriesService) UpdateCategories(categories *entity.Categories) (*e
 }
 
 // DeleteCategories delete a categories by its id
-func (cs *CategoriesService) DeleteCategories(id string) (*entity.Categories, []error) {
+func (cs *CategoriesService) DeleteCategories(ctx context.Context, id string) (*entity.Categories, []error) {
 
-	cat, errs := cs.categoriesRepo.DeleteCategories(id)
+	cat, errs := cs.categoriesRepo.DeleteCategories(ctx, id)
 
 	if len(errs) > 0 {
 		return nil, errs

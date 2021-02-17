@@ -1,12 +1,14 @@
 package productHandler
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/birukbelay/item/entity"
 	"github.com/birukbelay/item/utils/validators/FormValidators"
 	"net/http"
 	"net/url"
 	"strconv"
+	"time"
 
 	"github.com/julienschmidt/httprouter"
 	//"go.mongodb.org/mongo-driver/bson/primitive"
@@ -35,6 +37,8 @@ func (aih *AdminCategoriesHandler) GetCategories(w http.ResponseWriter, r *http.
 	query := r.URL.Query()
 
 	offsetValue :=query.Get("offset")
+	contxt := r.Context()
+	var ctx, _ = context.WithTimeout(contxt, 30*time.Second)
 
 
 
@@ -48,7 +52,7 @@ func (aih *AdminCategoriesHandler) GetCategories(w http.ResponseWriter, r *http.
 	}
 
 
-	Categories, errs := aih.categoriesService.Categories(limit, offsetValue)
+	Categories, errs := aih.categoriesService.Categories(ctx, limit, offsetValue)
 	if len(errs) > 0 {
 		helpers.HandleErr(w, errs, global.StatusNotFound, http.StatusNotFound)
 		return
@@ -67,13 +71,15 @@ func (aih *AdminCategoriesHandler) GetCategories(w http.ResponseWriter, r *http.
 }
 
 // GetSingleCategories handles GET /categories/create:id request
-func (aih *AdminCategoriesHandler) GetSingleCategories(w http.ResponseWriter, _ *http.Request, ps httprouter.Params) {
+func (aih *AdminCategoriesHandler) GetSingleCategories(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	id := ps.ByName("id")
+	contxt := r.Context()
+	var ctx, _ = context.WithTimeout(contxt, 30*time.Second)
 
 
 	// calling the service
-	categories, errs := aih.categoriesService.Category(id)
+	categories, errs := aih.categoriesService.Category(ctx, id)
 	if len(errs) > 0 {
 		helpers.HandleErr(w, errs, global.StatusNotFound, http.StatusNotFound)
 		return
@@ -93,6 +99,9 @@ func (aih *AdminCategoriesHandler) GetSingleCategories(w http.ResponseWriter, _ 
 
 // CreateCategories handles POST /v1/admin/Categories request
 func (aih *AdminCategoriesHandler) CreateCategories(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+
+	contxt := r.Context()
+	var ctx, _ = context.WithTimeout(contxt, 30*time.Second)
 
 	if err := r.ParseMultipartForm(global.MaxUploadSize); err != nil {
 		//fmt.Printf("Could not parse multipart form: %v\n", err)
@@ -124,9 +133,9 @@ func (aih *AdminCategoriesHandler) CreateCategories(w http.ResponseWriter, r *ht
 	categories.Image = img
 
 	// calling the service
-	gen, errs := aih.categoriesService.StoreCategories(categories)
+	gen, errs := aih.categoriesService.StoreCategories(ctx, categories)
 	if len(errs) > 0 {
-		helpers.HandleErr(w, errs, global.StatusInternalServerError, 404)
+		helpers.RenderResponse(w, errs, global.StatusInternalServerError, 404)
 		return
 	}
 
@@ -140,6 +149,9 @@ func (aih *AdminCategoriesHandler) CreateCategories(w http.ResponseWriter, r *ht
 // UpdateCategories handles PUT /categories/update/:id request
 func (aih *AdminCategoriesHandler) UpdateCategories(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
+	contxt := r.Context()
+	var ctx, _ = context.WithTimeout(contxt, 30*time.Second)
+
 	id := ps.ByName("id")
 	//query := r.URL.Query()
 
@@ -149,7 +161,7 @@ func (aih *AdminCategoriesHandler) UpdateCategories(w http.ResponseWriter, r *ht
 	//	return
 	//}
 
-	gen, errs := aih.categoriesService.Category(id)
+	gen, errs := aih.categoriesService.Category(ctx, id)
 	if len(errs) > 0 {
 		helpers.HandleErr(w, errs, global.StatusNotFound, http.StatusNotFound)
 		return
@@ -203,7 +215,7 @@ func (aih *AdminCategoriesHandler) UpdateCategories(w http.ResponseWriter, r *ht
 
 
 	// calling the service
-	categories, errs = aih.categoriesService.UpdateCategories(gen)
+	categories, errs = aih.categoriesService.UpdateCategories(ctx, gen)
 	if len(errs) > 0 {
 		helpers.HandleErr(w, errs, global.StatusNotFound, 404)
 		return
@@ -216,10 +228,13 @@ func (aih *AdminCategoriesHandler) UpdateCategories(w http.ResponseWriter, r *ht
 // DeleteCategories handles DELETE /categories/remove/:id request
 func (aih *AdminCategoriesHandler) DeleteCategories(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
+	contxt := r.Context()
+	var ctx, _ = context.WithTimeout(contxt, 30*time.Second)
+
 	id := ps.ByName("id")
 
 	// calling the service
-	categories, errs := aih.categoriesService.Category(id)
+	categories, errs := aih.categoriesService.Category(ctx, id)
 
 	helpers.LogTrace("ctg", categories)
 
@@ -228,7 +243,7 @@ func (aih *AdminCategoriesHandler) DeleteCategories(w http.ResponseWriter, r *ht
 		return
 	}
 	// calling the service
-	categories, errs = aih.categoriesService.DeleteCategories(id)
+	categories, errs = aih.categoriesService.DeleteCategories(ctx, id)
 	if len(errs) > 0 {
 		helpers.HandleErr(w, errs, global.StatusInternalServerError, http.StatusInternalServerError)
 		return

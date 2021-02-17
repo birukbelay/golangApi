@@ -1,6 +1,7 @@
 package mongo
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/birukbelay/item/entity"
@@ -18,7 +19,7 @@ type CategoriesMongoRepo struct {
 
 
 
-func (cmr CategoriesMongoRepo) Categories(limit int , offset string) ([]entity.Categories, []error) {
+func (cmr CategoriesMongoRepo) Categories(ctx context.Context, limit int , offset string) ([]entity.Categories, []error) {
 	Categoriess :=[]entity.Categories{}
 
 	findOptions := options.Find()
@@ -62,7 +63,7 @@ func (cmr CategoriesMongoRepo) Categories(limit int , offset string) ([]entity.C
 }
 
 
-func (cmr CategoriesMongoRepo) Category(id string) (*entity.Categories, []error) {
+func (cmr CategoriesMongoRepo) Category(ctx context.Context, id string) (*entity.Categories, []error) {
 	categories := entity.Categories{}
 
 	var a []error
@@ -81,7 +82,7 @@ func (cmr CategoriesMongoRepo) Category(id string) (*entity.Categories, []error)
 }
 
 
-func (cmr CategoriesMongoRepo) UpdateCategories(categories *entity.Categories) (*entity.Categories, []error) {
+func (cmr CategoriesMongoRepo) UpdateCategories(ctx context.Context, categories *entity.Categories) (*entity.Categories, []error) {
 	update := bson.M{"$set": categories}
 	helpers.LogTrace("id", categories.ID)
 	filter := bson.D{{"_id", categories.ID}}
@@ -106,7 +107,7 @@ func (cmr CategoriesMongoRepo) UpdateCategories(categories *entity.Categories) (
 }
 
 
-func (cmr CategoriesMongoRepo) DeleteCategories(id string) (*entity.Categories, []error) {
+func (cmr CategoriesMongoRepo) DeleteCategories(ctx context.Context, id string) (*entity.Categories, []error) {
 	oid, _ := primitive.ObjectIDFromHex(id)
 	filter := bson.D{{"_id", oid}}
 
@@ -121,7 +122,7 @@ func (cmr CategoriesMongoRepo) DeleteCategories(id string) (*entity.Categories, 
 	return nil, nil
 }
 
-func (cmr CategoriesMongoRepo) StoreCategories(categories *entity.Categories) (*entity.Categories, []error) {
+func (cmr CategoriesMongoRepo) StoreCategories(ctx context.Context, categories *entity.Categories) (*entity.Categories, []error) {
 
 	fmt.Println(categories)
 	id, err := cmr.collection.InsertOne(ctx, categories)

@@ -86,7 +86,7 @@ func UploadFile(r *http.Request, updating bool, updatingFileName string, uniqueP
 	newPath := filepath.Join(wd, "public", "assets", "images", uniquePath)
 	fullPath := filepath.Join(newPath, imgName)
 
-	LogTrace("path", newPath)
+	//LogTrace("path", newPath)
 
 	//fmt.Printf("FileType: %s, File: %s\n", detectedFileType, newPath)
 	// write file
