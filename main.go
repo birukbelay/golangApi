@@ -96,6 +96,7 @@ func main() {
 	itemRepo := mgoProductRepo.NewProductMongoRepo(itemCollection)
 
 	categoriesCollection:=db1.Collection("Categories")
+
 	categoriesRepo := mgoProductRepo.NewCategoriesMongoRepo(categoriesCollection)
 
 	userCollection :=db1.Collection("users")
