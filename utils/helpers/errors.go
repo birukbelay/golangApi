@@ -224,9 +224,9 @@ func RenderResponse(w http.ResponseWriter, output interface{}, header string, st
 	package_name := re.ReplaceAllString(funcName, "$1")
 	log.Printf("++++ function_name:- %s \n:> [OUTPUT]:- %v  \n\n", package_name, output)
 	log.Printf(" %s ", Trim(funcName))
-	fmt.Println("40...")
+	//fmt.Println("40...")
 
-	PrintUi(".", 40)
+	//PrintUi(".", 40)
 
 	pc := make([]uintptr, 15)
 	n := runtime.Callers(2, pc)

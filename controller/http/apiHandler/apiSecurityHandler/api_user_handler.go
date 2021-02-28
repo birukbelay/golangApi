@@ -155,10 +155,12 @@ func (uh *UserHandler) AdminUsersNew(w http.ResponseWriter, r *http.Request, _ h
 
 
 // AdminUsersUpdate handles GET/POST /admin/users/update?id={id} request
-func (uh *UserHandler) AdminUsersUpdate(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (uh *UserHandler) AdminUsersUpdate(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	contxt := r.Context()
 	var ctx, _ = context.WithTimeout(contxt, 30*time.Second)
+	id := ps.ByName("id")
 		// Parse the form
+		helpers.LogTrace("update", "here")
 	if err := r.ParseMultipartForm(global.MaxUploadSize); err != nil {
 		//fmt.Printf("Could not parse multipart form: %v\n", err)
 		helpers.RenderResponse(w,err, global.ParseFile, http.StatusBadRequest)
@@ -167,7 +169,7 @@ func (uh *UserHandler) AdminUsersUpdate(w http.ResponseWriter, r *http.Request, 
 
 	// form is found in github.com/birukbelay/items/utils/validators/form
 	accountForm := form.Input{Values: r.PostForm, VErrors: form.ValidationErrors{}}
-	valid:= FormValidators.FormUserValidator(&accountForm)
+	valid:= FormValidators.FormUserUpdateValidator(&accountForm)
 	if !valid{
 		helpers.RenderResponse(w, accountForm.VErrors, global.Validation, http.StatusBadRequest)
 		//helpers.LogValue("UserFormErrors", accountForm.VErrors)
@@ -175,14 +177,15 @@ func (uh *UserHandler) AdminUsersUpdate(w http.ResponseWriter, r *http.Request, 
 	}
 
 
-	userID := r.FormValue("userid")
+
+
 	phone:=r.FormValue("phone")
 	email:=r.FormValue("email")
 	username:= r.FormValue("username")
 	roleID := r.FormValue("role")
 
 
-	user, errs := uh.userService.GetUser(ctx, userID)
+	user, errs := uh.userService.GetUser(ctx, id)
 	if len(errs) > 0 {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
@@ -207,30 +210,42 @@ func (uh *UserHandler) AdminUsersUpdate(w http.ResponseWriter, r *http.Request, 
 	}
 
 
-		usr := &entity.User{
-			ID:       user.ID,
-			Username: username,
-			Email:    email,
-			Phone:    phone,
-			Password: user.Password,
-			Role:     roleID,
+		if username !=""{
+			user.Username=username
 		}
-		_, errs = uh.userService.UpdateUser(ctx, usr)
+		if email !=""{
+			user.Email=email
+		}
+		if phone !=""{
+			user.Phone=phone
+		}
+
+
+		if roleID !=""{
+			user.Role=roleID
+		}
+
+
+		user, errs = uh.userService.UpdateUser(ctx, user)
 		if len(errs) > 0 {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
+	helpers.RenderResponse(w, user, global.UserCreated, http.StatusAccepted)
+	return
 
 
 }
 
 // AdminUsersDelete handles Delete /admin/users/delete?id={id} request
-func (uh *UserHandler) AdminUsersDelete(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (uh *UserHandler) AdminUsersDelete(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	contxt := r.Context()
 	var ctx, _ = context.WithTimeout(contxt, 30*time.Second)
-	idRaw := r.URL.Query().Get("id")
-		_, errs := uh.userService.DeleteUser(ctx, idRaw)
+	id := ps.ByName("id")
+		user, errs := uh.userService.DeleteUser(ctx, id)
 		if len(errs) > 0 {
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		}
+	helpers.RenderResponse(w, user, global.Success, http.StatusNoContent)
+	return
 }

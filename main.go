@@ -142,11 +142,11 @@ func main() {
 	router.POST("/login", sh.ApiLogin)
 	router.POST("/signup", sh.ApiSignup)
 	//user
-	router.POST("/api/user",sh.AdminUsersNew)
-	router.PUT("/api/user",sh.AdminUsersUpdate)
-	router.DELETE("/api/user",sh.AdminUsersDelete)
-	router.GET("/api/users",sh.AdminUsers)
 	router.GET("/api/user/:id",sh.User)
+	router.GET("/api/users",sh.AdminUsers)
+	router.POST("/api/user",sh.AdminUsersNew)
+	router.PUT("/api/user/:id",sh.AdminUsersUpdate)
+	router.DELETE("/api/user/:id",sh.AdminUsersDelete)
 
 
 	//Products

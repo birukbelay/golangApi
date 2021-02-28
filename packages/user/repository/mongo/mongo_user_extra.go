@@ -1,6 +1,7 @@
 package mongo
 
 import (
+	"context"
 	//"context"
 	"fmt"
 	//"time"
@@ -12,7 +13,7 @@ import (
 	"github.com/birukbelay/item/entity"
 
 )
-func (umr UserMongoRepo) AddSession(user *entity.User) (*entity.User, []error) {
+func (umr UserMongoRepo) AddSession(ctx context.Context, user *entity.User) (*entity.User, []error) {
 	session := bson.D{
 		{"$set", bson.D{
 			{"session", user.Session},
