@@ -65,18 +65,15 @@ func (aih *AdminItemHandler) GetFilteredItems(w http.ResponseWriter, r *http.Req
 
 
 
-	Items,first, last, errs := aih.itemService.ItemsByFilter(ctx, limit, offsetValue, searchField, categories, brand, types, sort, sortWay, minPrice, maxPrice)
+	Items,_, _, errs := aih.itemService.ItemsByFilter(ctx, limit, offsetValue, searchField, categories, brand, types, sort, sortWay, minPrice, maxPrice)
 	if len(errs) > 0 {
 		helpers.HandleErr(w, errs, global.StatusNotFound, http.StatusNotFound)
 		return
 	}
-	response := make(map[string]interface{})
-	response["items"]= Items
-	response["first"]=first
-	response["last"]=last
 
 
-	output, err := json.MarshalIndent(response, "", "\t\t")
+
+	output, err := json.MarshalIndent(Items, "", "\t\t")
 	if err != nil {
 		helpers.HandleErr(w, err, global.StatusInternalServerError, 500)
 		return

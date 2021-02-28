@@ -30,7 +30,6 @@ type UserHandler struct {
 
 // NewUserHandler returns new UserHandler object
 func NewUserHandler( usrServ user2.UserService, sKey []byte) *UserHandler {
-
 	return &UserHandler{userService: usrServ,  signKey: sKey}
 }
 

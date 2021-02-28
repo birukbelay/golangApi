@@ -63,7 +63,7 @@ var errorText = map[string]string{
 	InvalidData:         "This data Is Invalid",
 	Generic:             "Some thing may be wrong please try again",
 	PhoneExists:         "Phone Already Exists",
-	EmailExists:         "UserId Already Exists",
+	EmailExists:         "Email Already Exists",
 	Password:            "Password Could not be stored",
 	Role:                "could not assign role to the user",
 	ParseFile:           "Could not parse multipart form",
