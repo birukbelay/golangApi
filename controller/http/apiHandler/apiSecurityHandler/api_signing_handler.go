@@ -1,6 +1,7 @@
 package apiSecurityhandler
 
 import (
+	"context"
 	"fmt"
 	"github.com/birukbelay/item/utils/validators/FormValidators"
 	"github.com/birukbelay/item/utils/validators/form"
@@ -31,6 +32,9 @@ func (uh *UserHandler) checkAdmin(rs []string) bool {
 // ApiLogin  the POST /login requests
 func (uh *UserHandler) ApiLogin(w http.ResponseWriter, r *http.Request,  _ httprouter.Params) {
 
+	contxt := r.Context()
+	var ctx, _ = context.WithTimeout(contxt, 30*time.Second)
+
 	if err := r.ParseMultipartForm(global.MaxUploadSize); err != nil {
 		//fmt.Printf("Could not parse multipart form: %v\n", err)
 		helpers.RenderResponse(w,err, global.ParseFile, http.StatusBadRequest)
@@ -57,14 +61,14 @@ func (uh *UserHandler) ApiLogin(w http.ResponseWriter, r *http.Request,  _ httpr
 	user := &entity.User{}
 
 	if loginData.InfoType=="email"{
-		usr, errs := uh.userService.UserByEmail(loginData.LoginInfo)
+		usr, errs := uh.userService.UserByEmail(ctx, loginData.LoginInfo)
 		if len(errs) > 0 {
 			helpers.HandleErr(w, errs, global.EmailOrPassword, 400)
 			return
 		}
 		user=usr
 	}else if  loginData.InfoType=="phone"{
-		usr, errs := uh.userService.UserByPhone(loginData.LoginInfo)
+		usr, errs := uh.userService.UserByPhone(ctx, loginData.LoginInfo)
 		if len(errs) > 0 {
 			helpers.HandleErr(w, errs, global.EmailOrPassword, 400)
 			return
@@ -92,7 +96,7 @@ func (uh *UserHandler) ApiLogin(w http.ResponseWriter, r *http.Request,  _ httpr
 	}
 	user.Session = append(user.Session, *session)
 
-	_, errs := uh.userService.UpdateUser(user)
+	_, errs := uh.userService.UpdateUser(ctx, user)
 	if len(errs) > 0 {
 		helpers.RenderResponse(w, global.StatusInternalServerError, global.StatusInternalServerError, 500)
 		return
@@ -108,6 +112,9 @@ func (uh *UserHandler) ApiLogin(w http.ResponseWriter, r *http.Request,  _ httpr
 
 // Signup hanldes the GET/POST /signup requests
 func (uh *UserHandler) ApiSignup(w http.ResponseWriter, r *http.Request,  _ httprouter.Params) {
+
+	contxt := r.Context()
+	var ctx, _ = context.WithTimeout(contxt, 30*time.Second)
 
 	if err := r.ParseMultipartForm(global.MaxUploadSize); err != nil {
 		//fmt.Printf("Could not parse multipart form: %v\n", err)
@@ -132,12 +139,12 @@ func (uh *UserHandler) ApiSignup(w http.ResponseWriter, r *http.Request,  _ http
 		Phone:    r.FormValue("phone"),
 	}
 
-	pExists := uh.userService.PhoneExists(user.Phone)
+	pExists := uh.userService.PhoneExists(ctx, user.Phone)
 	if pExists {
 		helpers.HandleErr(w, global.PhoneExists, global.PhoneExists, http.StatusBadRequest)
 		return
 	}
-	eExists := uh.userService.EmailExists(user.Email)
+	eExists := uh.userService.EmailExists(ctx, user.Email)
 	if eExists {
 		helpers.HandleErr(w, global.EmailExists, global.EmailExists, http.StatusBadRequest)
 		return
@@ -169,7 +176,7 @@ func (uh *UserHandler) ApiSignup(w http.ResponseWriter, r *http.Request,  _ http
 	user.Session = append(user.Session, *session)
 //fmt.Println("...before Storing")
 
-	usr, errs := uh.userService.StoreUser(user)
+	usr, errs := uh.userService.StoreUser(ctx, user)
 	if len(errs) > 0 {
 		fmt.Println("...error")
 		helpers.RenderResponse(w, global.StatusInternalServerError, global.StatusInternalServerError, 500)

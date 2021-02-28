@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/birukbelay/item/entity"
-	"github.com/birukbelay/item/utils/validators/FormValidators"
 	"net/http"
 	"net/url"
 	"strconv"
 	"time"
+
+	"github.com/birukbelay/item/entity"
+	"github.com/birukbelay/item/utils/validators/FormValidators"
 
 	"github.com/birukbelay/item/packages/items"
 	"github.com/birukbelay/item/utils/global"
@@ -83,7 +84,6 @@ func (aih *AdminItemHandler) GetSingleItem(w http.ResponseWriter, r *http.Reques
 	contxt := r.Context()
 	var ctx, _ = context.WithTimeout(contxt, 30*time.Second)
 
-
 	// calling the service
 	item, errs := aih.itemService.Item(ctx, id)
 	if len(errs) > 0 {
@@ -132,20 +132,17 @@ func (aih *AdminItemHandler) CreateItem(w http.ResponseWriter, r *http.Request, 
 
 	// IMAGE UPLOAD
 	fmt.Println("beSess..")
-	userSess, _ := r.Context().Value(entity.CtxUserSessionKey).(*entity.User)
-
-
+	//userSess, _ := r.Context().Value(entity.CtxUserSessionKey).(*entity.User)
 
 	// IMAGE UPLOAD
-	fmt.Println("beUpl..",userSess)
+	// fmt.Println("beUpl..",userSess)
 
-	img, er, status, statusCode := helpers.UploadFile(r, false, "", "items" )
+	img, er, status, statusCode := helpers.UploadFile(r, false, "", "items")
 	if er != nil {
 		helpers.RenderResponse(w, err, status, statusCode)
 		return
 	}
 	item.Image = img
-
 
 	// calling the service
 	item, errs := aih.itemService.StoreItem(ctx, item)
@@ -153,10 +150,9 @@ func (aih *AdminItemHandler) CreateItem(w http.ResponseWriter, r *http.Request, 
 		helpers.HandleErr(w, errs, global.StatusInternalServerError, 404)
 		return
 	}
-	fmt.Println("ll...")
 
 	helpers.RenderResponse(w, item, global.Success, http.StatusCreated)
-	fmt.Println("ll...")
+
 	//p := fmt.Sprintf("/v1/admin/Items/%d", items.ID)
 	//w.Header().Set("Location", p)
 	return
@@ -189,44 +185,34 @@ func (aih *AdminItemHandler) UpdateItem(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
-
 	itm, errs := aih.itemService.Item(ctx, id)
 	if len(errs) > 0 {
 		helpers.HandleErr(w, errs, global.StatusNotFound, http.StatusNotFound)
 		return
 	}
 
-
 	item, err := InitiateItem(r.PostForm)
 	if err != nil {
 		helpers.RenderResponse(w, err, global.ItemInitialization, http.StatusBadRequest)
 		return
 	}
-	itm.Price=item.Price
-	itm.Categories=item.Categories
-	itm.Name=item.Name
-	itm.Description=item.Description
-
+	itm.Price = item.Price
+	itm.Categories = item.Categories
+	itm.Name = item.Name
+	itm.Description = item.Description
 
 	helpers.LogTrace("foundItem FOr Update", itm)
 
-
-
-
-
-
-	imageChanged , er := strconv.ParseBool(r.PostForm.Get("imageChanged"))
-	if er!=nil{
-		imageChanged =false
+	imageChanged, er := strconv.ParseBool(r.PostForm.Get("imageChanged"))
+	if er != nil {
+		imageChanged = false
 	}
 	//userSess, _ := r.Context().Value(entity.CtxUserSessionKey).(*entity.User)
 
-
 	image := itm.Image
 
-
 	if imageChanged {
-		img, err, status, statusCode := helpers.UploadFile(r,true,image,"items")
+		img, err, status, statusCode := helpers.UploadFile(r, true, image, "items")
 		if err != nil {
 			helpers.LogTrace("UpdateImgErr", err)
 			helpers.RenderResponse(w, err, status, statusCode)
@@ -235,13 +221,9 @@ func (aih *AdminItemHandler) UpdateItem(w http.ResponseWriter, r *http.Request, 
 		}
 		itm.Image = img
 		//TODO make a function to Change the image, Delete the Image
-	}else {
+	} else {
 		itm.Image = itm.Image
 	}
-
-
-
-
 
 	// calling the service
 	item, errs = aih.itemService.UpdateItem(ctx, itm)
@@ -290,19 +272,17 @@ func InitiateItem(values url.Values) (*entity.Item, error) {
 		return nil, err
 	}
 
-
-	category:= values.Get("category")
+	category := values.Get("category")
 	var categories []string
-	categories=append(categories, category)
+	categories = append(categories, category)
 	item := &entity.Item{
-		Name:         values.Get("name"),
-		Description:  values.Get("description"),
+		Name:        values.Get("name"),
+		Description: values.Get("description"),
 		//Image:        values.Get("image"),
-		Categories: categories ,
-		Type:     values.Get("type"),
+		Categories: categories,
+		Type:       values.Get("type"),
 
-		Price:    int(year),
-
+		Price: int(year),
 	}
 	return item, nil
 }

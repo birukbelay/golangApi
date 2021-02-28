@@ -15,14 +15,13 @@ import (
 type UserMongoRepo struct {
 	collection *mongo.Collection
 }
-//var ctx, _ = context.WithTimeout(context.Background(), 10*time.Second)
-var ctx = context.Background()
+
 
 // NewUserMongoRepo will create a new object of CategoriesGormRepo
 func NewUserMongoRepo(C *mongo.Collection) user.UserRepository {
 	return &UserMongoRepo{collection: C}
 }
-func (umr UserMongoRepo) GetUsers() ([]entity.User, []error) {
+func (umr UserMongoRepo) GetUsers(ctx context.Context) ([]entity.User, []error) {
 	var users []entity.User
 
 	cursor, err := umr.collection.Find(ctx, bson.M{})
@@ -48,7 +47,7 @@ func (umr UserMongoRepo) GetUsers() ([]entity.User, []error) {
 	return users, nil
 }
 
-func (umr UserMongoRepo) GetUser(id string) (*entity.User, []error) {
+func (umr UserMongoRepo) GetUser(ctx context.Context, id string) (*entity.User, []error) {
 	usr := entity.User{}
 
 	var a []error
@@ -66,7 +65,7 @@ func (umr UserMongoRepo) GetUser(id string) (*entity.User, []error) {
 	return &usr, nil
 }
 
-func (umr UserMongoRepo) UpdateUser(user *entity.User) (*entity.User, []error) {
+func (umr UserMongoRepo) UpdateUser(ctx context.Context, user *entity.User) (*entity.User, []error) {
 
 
 	update := bson.M{"$set": user}
@@ -85,7 +84,7 @@ func (umr UserMongoRepo) UpdateUser(user *entity.User) (*entity.User, []error) {
 	return user, nil
 }
 
-func (umr UserMongoRepo) StoreUser(user *entity.User) (*entity.User, []error) {
+func (umr UserMongoRepo) StoreUser(ctx context.Context, user *entity.User) (*entity.User, []error) {
 	usr:=user
 	//helpers.LogValue("reached store",user)
 	id, err := umr.collection.InsertOne(ctx, usr)
@@ -105,7 +104,7 @@ func (umr UserMongoRepo) StoreUser(user *entity.User) (*entity.User, []error) {
 }
 
 //TODO change the return type
-func (umr UserMongoRepo) DeleteUser(id string) (*entity.User, []error) {
+func (umr UserMongoRepo) DeleteUser(ctx context.Context, id string) (*entity.User, []error) {
 	oid, _ := primitive.ObjectIDFromHex(id)
 	filter := bson.D{{"_id", oid}}
 
@@ -121,7 +120,7 @@ func (umr UserMongoRepo) DeleteUser(id string) (*entity.User, []error) {
 
 
 
-func (umr UserMongoRepo) UserByName(name string) (*entity.User, []error) {
+func (umr UserMongoRepo) UserByName(ctx context.Context, name string) (*entity.User, []error) {
 	usr := entity.User{}
 
 	var a []error
@@ -139,7 +138,7 @@ func (umr UserMongoRepo) UserByName(name string) (*entity.User, []error) {
 	return &usr, nil
 }
 
-func (umr UserMongoRepo) UserByPhone(phone string) (*entity.User, []error) {
+func (umr UserMongoRepo) UserByPhone(ctx context.Context, phone string) (*entity.User, []error) {
 	usr := entity.User{}
 
 
@@ -158,7 +157,7 @@ func (umr UserMongoRepo) UserByPhone(phone string) (*entity.User, []error) {
 	return &usr, nil
 }
 
-func (umr UserMongoRepo) UserByEmail(email string) (*entity.User, []error) {
+func (umr UserMongoRepo) UserByEmail(ctx context.Context, email string) (*entity.User, []error) {
 	usr := entity.User{}
 
 
@@ -177,7 +176,7 @@ func (umr UserMongoRepo) UserByEmail(email string) (*entity.User, []error) {
 }
 
 
-func (umr UserMongoRepo) PhoneExists(phone string) bool {
+func (umr UserMongoRepo) PhoneExists(ctx context.Context, phone string) bool {
 	usr := entity.User{}
 	filter := bson.D{{"phone", phone}}
 
@@ -193,7 +192,7 @@ func (umr UserMongoRepo) PhoneExists(phone string) bool {
 	return true
 }
 
-func (umr UserMongoRepo) EmailExists(email string) bool {
+func (umr UserMongoRepo) EmailExists(ctx context.Context, email string) bool {
 	usr := entity.User{}
 
 	filter := bson.D{{"email", email}}

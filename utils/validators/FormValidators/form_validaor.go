@@ -1,11 +1,12 @@
 package FormValidators
 
 import (
-	"github.com/birukbelay/item/utils/validators/form"
 	"net/url"
+
+	"github.com/birukbelay/item/utils/validators/form"
 )
 
-func FormCategoriesValidator(values url.Values) (form.ValidationErrors, bool)  {
+func FormCategoriesValidator(values url.Values) (form.ValidationErrors, bool) {
 
 	newCategories := form.Input{Values: values, VErrors: form.ValidationErrors{}}
 	newCategories.Required("name", "description")
@@ -19,12 +20,11 @@ func FormCategoriesValidator(values url.Values) (form.ValidationErrors, bool)  {
 	return newCategories.VErrors, true
 }
 
-func FormItemValidator(values url.Values) (bool, form.ValidationErrors)  {
+func FormItemValidator(values url.Values) (bool, form.ValidationErrors) {
 
 	newItemForm := form.Input{Values: values, VErrors: form.ValidationErrors{}}
-	newItemForm.Required("name", "description","category", )
-	newItemForm.MinLength("description", 10)
-
+	newItemForm.Required("name", "description", "category")
+	newItemForm.MinLength("description", 5)
 
 	if !newItemForm.Valid() {
 		return false, newItemForm.VErrors
@@ -32,5 +32,3 @@ func FormItemValidator(values url.Values) (bool, form.ValidationErrors)  {
 
 	return true, newItemForm.VErrors
 }
-
-

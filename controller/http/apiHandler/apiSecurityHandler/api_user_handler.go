@@ -1,11 +1,14 @@
 package apiSecurityhandler
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/birukbelay/item/utils/global"
 	"github.com/birukbelay/item/utils/validators/FormValidators"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -34,9 +37,11 @@ func NewUserHandler( usrServ user2.UserService, sKey []byte) *UserHandler {
 
 
 // AdminUsers handles Get /admin/users request
-func (uh *UserHandler) AdminUsers(w http.ResponseWriter, r *http.Request) {
+func (uh *UserHandler) AdminUsers(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
-	users, errs := uh.userService.GetUsers()
+	contxt := r.Context()
+	var ctx, _ = context.WithTimeout(contxt, 30*time.Second)
+	users, errs := uh.userService.GetUsers(ctx)
 	if len(errs) > 0 {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 	}
@@ -52,9 +57,36 @@ func (uh *UserHandler) AdminUsers(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func (uh *UserHandler) User(w http.ResponseWriter, r *http.Request,ps httprouter.Params){
+	id := ps.ByName("id")
+	fmt.Println(id)
+	contxt := r.Context()
+	var ctx, _ = context.WithTimeout(contxt, 30*time.Second)
+
+	// calling the service
+	item, errs := uh.userService.GetUser(ctx, id)
+	if len(errs) > 0 {
+		helpers.RenderResponse(w, errs, global.StatusNotFound, http.StatusNotFound)
+		return
+	}
+
+	output, err := json.MarshalIndent(item, "", "\t\t")
+
+	if err != nil {
+		helpers.HandleErr(w, err, global.StatusBadRequest, 400)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(output)
+	return
+}
+
+
 // AdminUsersNew handles GET/POST /admin/users/new request creates new User With Role
 func (uh *UserHandler) AdminUsersNew(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-
+	contxt := r.Context()
+	var ctx, _ = context.WithTimeout(contxt, 30*time.Second)
 	if err := r.ParseMultipartForm(global.MaxUploadSize); err != nil {
 		//fmt.Printf("Could not parse multipart form: %v\n", err)
 		helpers.RenderResponse(w,err, global.ParseFile, http.StatusBadRequest)
@@ -70,13 +102,13 @@ func (uh *UserHandler) AdminUsersNew(w http.ResponseWriter, r *http.Request, _ h
 		return
 	}
 
-		pExists := uh.userService.PhoneExists(r.FormValue("phone"))
+		pExists := uh.userService.PhoneExists(ctx, r.FormValue("phone"))
 		if pExists {
 			accountForm.VErrors.Add("phone", "Phone Already Exists")
 			helpers.RenderResponse(w, accountForm.VErrors, global.Validation, http.StatusBadRequest)
 			return
 		}
-		eExists := uh.userService.EmailExists(r.FormValue("email"))
+		eExists := uh.userService.EmailExists(ctx, r.FormValue("email"))
 		if eExists {
 			accountForm.VErrors.Add("email", "Email Already Exists")
 			helpers.RenderResponse(w, accountForm.VErrors, global.Validation, http.StatusBadRequest)
@@ -109,7 +141,7 @@ func (uh *UserHandler) AdminUsersNew(w http.ResponseWriter, r *http.Request, _ h
 			Roles: roles,
 		}
 	//user.ID = primitive.NewObjectID()
-		_, errs := uh.userService.StoreUser(user)
+		_, errs := uh.userService.StoreUser(ctx, user)
 		if len(errs) > 0 {
 			helpers.RenderResponse(w, errs, global.UserNotCreated, http.StatusInternalServerError)
 			return
@@ -123,8 +155,9 @@ func (uh *UserHandler) AdminUsersNew(w http.ResponseWriter, r *http.Request, _ h
 
 
 // AdminUsersUpdate handles GET/POST /admin/users/update?id={id} request
-func (uh *UserHandler) AdminUsersUpdate(w http.ResponseWriter, r *http.Request) {
-
+func (uh *UserHandler) AdminUsersUpdate(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	contxt := r.Context()
+	var ctx, _ = context.WithTimeout(contxt, 30*time.Second)
 		// Parse the form
 	if err := r.ParseMultipartForm(global.MaxUploadSize); err != nil {
 		//fmt.Printf("Could not parse multipart form: %v\n", err)
@@ -149,7 +182,7 @@ func (uh *UserHandler) AdminUsersUpdate(w http.ResponseWriter, r *http.Request) 
 	roleID := r.FormValue("role")
 
 
-	user, errs := uh.userService.GetUser(userID)
+	user, errs := uh.userService.GetUser(ctx, userID)
 	if len(errs) > 0 {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
@@ -157,7 +190,7 @@ func (uh *UserHandler) AdminUsersUpdate(w http.ResponseWriter, r *http.Request) 
 
 
 	if user.Phone != phone {
-		pExists := uh.userService.PhoneExists(r.FormValue("phone"))
+		pExists := uh.userService.PhoneExists(ctx, r.FormValue("phone"))
 		if pExists {
 			accountForm.VErrors.Add("phone", "Phone Already Exists")
 			//_ = uh.tmpl.ExecuteTemplate(w, "admin.user.update.layout", upAccForm)
@@ -165,7 +198,7 @@ func (uh *UserHandler) AdminUsersUpdate(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 	if email!=user.Email {
-		eExists := uh.userService.EmailExists(r.FormValue("email"))
+		eExists := uh.userService.EmailExists(ctx, r.FormValue("email"))
 		if eExists {
 			accountForm.VErrors.Add("email", "Email Already Exists")
 			helpers.RenderResponse(w, accountForm.VErrors, global.Validation, http.StatusBadRequest)
@@ -182,7 +215,7 @@ func (uh *UserHandler) AdminUsersUpdate(w http.ResponseWriter, r *http.Request) 
 			Password: user.Password,
 			Role:     roleID,
 		}
-		_, errs = uh.userService.UpdateUser(usr)
+		_, errs = uh.userService.UpdateUser(ctx, usr)
 		if len(errs) > 0 {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
@@ -192,9 +225,11 @@ func (uh *UserHandler) AdminUsersUpdate(w http.ResponseWriter, r *http.Request) 
 }
 
 // AdminUsersDelete handles Delete /admin/users/delete?id={id} request
-func (uh *UserHandler) AdminUsersDelete(w http.ResponseWriter, r *http.Request) {
-		idRaw := r.URL.Query().Get("id")
-		_, errs := uh.userService.DeleteUser(idRaw)
+func (uh *UserHandler) AdminUsersDelete(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	contxt := r.Context()
+	var ctx, _ = context.WithTimeout(contxt, 30*time.Second)
+	idRaw := r.URL.Query().Get("id")
+		_, errs := uh.userService.DeleteUser(ctx, idRaw)
 		if len(errs) > 0 {
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		}

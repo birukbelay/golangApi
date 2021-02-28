@@ -1,20 +1,23 @@
 package user
 
-import "github.com/birukbelay/item/entity"
+import (
+	"context"
+	"github.com/birukbelay/item/entity"
+)
 
 // UserRepository specifies application user related database operations
 type UserRepository interface {
-	GetUsers() ([]entity.User, []error)
-	GetUser(id string) (*entity.User, []error)
-	UpdateUser(user *entity.User) (*entity.User, []error)
-	DeleteUser(id string) (*entity.User, []error)
-	StoreUser(user *entity.User) (*entity.User, []error)
+	GetUsers(ctx context.Context) ([]entity.User, []error)
+	GetUser(ctx context.Context, id string) (*entity.User, []error)
+	UpdateUser(ctx context.Context, user *entity.User) (*entity.User, []error)
+	DeleteUser(ctx context.Context, id string) (*entity.User, []error)
+	StoreUser(ctx context.Context, user *entity.User) (*entity.User, []error)
 
-	UserByName(name string) (*entity.User, []error)
-	UserByPhone(phone string) (*entity.User, []error)
-	UserByEmail(email string) (*entity.User, []error)
-	PhoneExists(phone string) bool
-	EmailExists(email string) bool
+	UserByName(ctx context.Context, name string) (*entity.User, []error)
+	UserByPhone(ctx context.Context, phone string) (*entity.User, []error)
+	UserByEmail(ctx context.Context, email string) (*entity.User, []error)
+	PhoneExists(ctx context.Context, phone string) bool
+	EmailExists(ctx context.Context, email string) bool
 
 }
 

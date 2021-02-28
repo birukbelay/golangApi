@@ -8,12 +8,12 @@ type Item struct{
 	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Name        string `bson:"name" json:"name"`
 
-	Description string   `bson:"description,omitempty" json:"description"`
+	Description string   `bson:"description,omitempty" json:"description,omitempty"`
 	Image       string   `bson:"image,omitempty" json:"image"`
 	Categories  []string `bson:"categories,omitempty" json:"categories"`
 	Price       int      `bson:"year,omitempty" json:"price"`
 
-	Type        string   `bson:"type,omitempty" json:"type"`
+	Type        string   `bson:"type,omitempty" json:"type,omitempty"`
 
 
 }
@@ -22,7 +22,7 @@ type Item struct{
 type Categories struct{
 	ID primitive.ObjectID `bson:"_id" json:"id`
 	Name string `json:"name" bson:"name"`
-	Description string `json:"description" bson:"description"`
+	Description string `json:"description" bson:"description,omitempty"`
 	Image string `json:"image" bson:"image`
 }
 

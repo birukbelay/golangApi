@@ -142,7 +142,10 @@ func main() {
 	router.POST("/login", sh.ApiLogin)
 	router.POST("/signup", sh.ApiSignup)
 	//user
-	router.POST("/api/user/create",sh.AdminUsersNew)
+	router.POST("/api/user",sh.AdminUsersNew)
+	router.PUT("/api/user",sh.AdminUsersUpdate)
+	router.POST("/api/user",sh.AdminUsersNew)
+	router.POST("/api/user",sh.AdminUsersNew)
 
 
 	//Products
