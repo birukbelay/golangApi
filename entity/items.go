@@ -20,9 +20,9 @@ type Item struct{
 
 
 type Categories struct{
-	ID primitive.ObjectID `bson:"_id" json:"id`
+	ID primitive.ObjectID `bson:"_id" json:"id"`
 	Name string `json:"name" bson:"name"`
 	Description string `json:"description" bson:"description,omitempty"`
-	Image string `json:"image" bson:"image`
+	Image string `json:"image" bson:"image"`
 }
 

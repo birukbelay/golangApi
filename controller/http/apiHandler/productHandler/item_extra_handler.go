@@ -72,15 +72,9 @@ func (aih *AdminItemHandler) GetFilteredItems(w http.ResponseWriter, r *http.Req
 	}
 
 
+	helpers.RenderResponse(w, Items, global.Success, http.StatusCreated)
 
-	output, err := json.MarshalIndent(Items, "", "\t\t")
-	if err != nil {
-		helpers.HandleErr(w, err, global.StatusInternalServerError, 500)
-		return
-	}
 
-	w.Header().Set("Content-Type", "application/json")
-	_,_ = w.Write(output)
 	return
 
 }
