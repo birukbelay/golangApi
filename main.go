@@ -144,8 +144,9 @@ func main() {
 	//user
 	router.POST("/api/user",sh.AdminUsersNew)
 	router.PUT("/api/user",sh.AdminUsersUpdate)
-	router.POST("/api/user",sh.AdminUsersNew)
-	router.POST("/api/user",sh.AdminUsersNew)
+	router.DELETE("/api/user",sh.AdminUsersDelete)
+	router.GET("/api/users",sh.AdminUsers)
+	router.GET("/api/user/:id",sh.User)
 
 
 	//Products
