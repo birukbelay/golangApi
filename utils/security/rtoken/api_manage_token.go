@@ -1,22 +1,21 @@
 package rtoken
 
 import (
-	"net/http"
-
-"fmt"
+	"fmt"
 	"github.com/dgrijalva/jwt-go"
 )
 
 // Create creates and sets session cookie
-func CreateToken(w http.ResponseWriter, signingKey []byte, claims jwt.Claims ) {
+func CreateToken( signingKey []byte, claims jwt.Claims )(string, error ){
 
 	signedString, err := Categoryte(signingKey, claims)
 	if err != nil {
 		fmt.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
+		return "", nil
 	}
+	return signedString, nil
 
-	w.Header().Set("Token", signedString)
+
 }
 
 //// Valid validates client cookie value

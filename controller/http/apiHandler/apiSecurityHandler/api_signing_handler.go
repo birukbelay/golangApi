@@ -31,7 +31,7 @@ func (uh *UserHandler) checkAdmin(rs []string) bool {
 
 // ApiLogin  the POST /login requests
 func (uh *UserHandler) ApiLogin(w http.ResponseWriter, r *http.Request,  _ httprouter.Params) {
-
+	helpers.LogTrace("sn","here")
 	contxt := r.Context()
 	var ctx, _ = context.WithTimeout(contxt, 30*time.Second)
 
@@ -57,7 +57,7 @@ func (uh *UserHandler) ApiLogin(w http.ResponseWriter, r *http.Request,  _ httpr
 	}
 
 
-
+	helpers.LogTrace("sss","sss")
 	user := &entity.User{}
 
 	if loginData.InfoType=="email"{
@@ -96,15 +96,22 @@ func (uh *UserHandler) ApiLogin(w http.ResponseWriter, r *http.Request,  _ httpr
 	}
 	user.Session = append(user.Session, *session)
 
-	_, errs := uh.userService.UpdateUser(ctx, user)
+	user, errs := uh.userService.UpdateUser(ctx, user)
 	if len(errs) > 0 {
 		helpers.RenderResponse(w, global.StatusInternalServerError, global.StatusInternalServerError, 500)
 		return
 	}
 
-	uh.Aftermath(w ,user, session)
+	token, err:= uh.Aftermath(user, session)
+	if err!=nil{
+		helpers.RenderResponse(w, global.StatusInternalServerError, global.StatusInternalServerError, 500)
+	}
+
+	user.Token=token
+
 
 	helpers.RenderResponse(w, user, global.Success, http.StatusOK)
+	return
 
 }
 
@@ -176,16 +183,22 @@ func (uh *UserHandler) ApiSignup(w http.ResponseWriter, r *http.Request,  _ http
 	user.Session = append(user.Session, *session)
 //fmt.Println("...before Storing")
 
-	usr, errs := uh.userService.StoreUser(ctx, user)
+	user, errs := uh.userService.StoreUser(ctx, user)
 	if len(errs) > 0 {
 		fmt.Println("...error")
 		helpers.RenderResponse(w, global.StatusInternalServerError, global.StatusInternalServerError, 500)
 		return
 	}
 
-	uh.Aftermath(w , user, session)
+	token, err:= uh.Aftermath(user, session)
+	if err!=nil{
+		helpers.RenderResponse(w, global.StatusInternalServerError, global.StatusInternalServerError, 500)
+	}
+	user.Token=token
 
-	helpers.RenderResponse(w, usr, global.UserCreated, http.StatusCreated)
+
+
+	helpers.RenderResponse(w, user, global.UserCreated, http.StatusCreated)
 
 
 }
@@ -205,7 +218,7 @@ func CreateSession(user *entity.User) (*entity.Session, error) {
 	return Sess, nil
 }
 
-func (uh *UserHandler)Aftermath(w http.ResponseWriter, user *entity.User, session * entity.Session){
+func (uh *UserHandler)Aftermath( user *entity.User, session * entity.Session)(string, error){
 
 	uh.loggedInUser = user
 
@@ -214,7 +227,8 @@ func (uh *UserHandler)Aftermath(w http.ResponseWriter, user *entity.User, sessio
 
 	claims := rtoken2.Claims(user, string(session.UUID), user.ID, tokenExpires)
 
-	rtoken2.CreateToken(w, uh.signKey, claims)
+	token, err:= rtoken2.CreateToken(uh.signKey, claims)
+	return token, err
 
 }
 

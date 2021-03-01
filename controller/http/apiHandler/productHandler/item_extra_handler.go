@@ -72,7 +72,7 @@ func (aih *AdminItemHandler) GetFilteredItems(w http.ResponseWriter, r *http.Req
 	}
 
 
-	helpers.RenderResponse(w, Items, global.Success, http.StatusCreated)
+	helpers.RenderResponse(w, Items, global.Success, http.StatusOK)
 
 
 	return

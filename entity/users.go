@@ -17,9 +17,10 @@ type User struct {
 	Email    string `gorm:"type:varchar(255);not null; unique" json:"email,omitempty" bson:"email,omitempty"`
 	Phone    string `gorm:"type:varchar(100);not null; unique" json:"phone,omitempty" bson:"phone,omitempty"`
 	Password string `gorm:"type:varchar(255)"`
-	Role     string
-	Roles []string
-	Session []Session
+	Role     string `gorm:"type:varchar(255)" json:"role"`
+	Roles []string `json:"roles"`
+	Session []Session `json:"session"`
+	Token string 		`json:"token"`
 
 
 }
